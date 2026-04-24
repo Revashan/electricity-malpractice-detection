@@ -1,88 +1,61 @@
--- 1. Create cleaned customer consumption table
+-- 1. Create cleaned utility consumption table
 
-CREATE TABLE electricity_consumption_clean AS
-SELECT
-    customer_id,
-    meter_id,
-    region,
-    customer_type,
-    reading_date,
-    consumption_kwh,
-    bill_amount,
-    payment_status,
-    fraud_flag
-FROM electricity_consumption
-WHERE customer_id IS NOT NULL
-  AND reading_date IS NOT NULL
-  AND consumption_kwh IS NOT NULL;
+CREATE TABLE utility_consumption_clean (
+    customer_id VARCHAR(50),
+    billing_month DATE,
+    service_type VARCHAR(20),
+    region VARCHAR(100),
+    tariff_type VARCHAR(50),
+    meter_id VARCHAR(50),
+    previous_reading DECIMAL(18,2),
+    current_reading DECIMAL(18,2),
+    consumption_units DECIMAL(18,2),
+    average_3m_consumption DECIMAL(18,2),
+    average_6m_consumption DECIMAL(18,2),
+    bill_amount DECIMAL(18,2),
+    payment_status VARCHAR(30),
+    anomaly_flag INT,
+    anomaly_type VARCHAR(100),
+    anomaly_score DECIMAL(10,4),
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
+-- 2. Basic data quality checks
 
--- 2. Check duplicate records
-
-SELECT
-    customer_id,
-    reading_date,
-    COUNT(*) AS duplicate_count
-FROM electricity_consumption_clean
-GROUP BY customer_id, reading_date
-HAVING COUNT(*) > 1;
-
-
--- 3. Monthly consumption summary
-
-SELECT
-    customer_id,
-    DATE_TRUNC('month', reading_date) AS billing_month,
-    SUM(consumption_kwh) AS monthly_consumption_kwh,
-    AVG(consumption_kwh) AS avg_daily_consumption,
-    MAX(consumption_kwh) AS max_daily_consumption,
-    MIN(consumption_kwh) AS min_daily_consumption
-FROM electricity_consumption_clean
-GROUP BY customer_id, DATE_TRUNC('month', reading_date);
-
-
--- 4. Fraud distribution by region
-
-SELECT
-    region,
+SELECT 
     COUNT(*) AS total_records,
-    SUM(CASE WHEN fraud_flag = 1 THEN 1 ELSE 0 END) AS fraud_records,
-    ROUND(
-        SUM(CASE WHEN fraud_flag = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*),
-        2
-    ) AS fraud_percentage
-FROM electricity_consumption_clean
-GROUP BY region
-ORDER BY fraud_percentage DESC;
+    COUNT(DISTINCT customer_id) AS unique_customers,
+    SUM(CASE WHEN customer_id IS NULL THEN 1 ELSE 0 END) AS missing_customer_id,
+    SUM(CASE WHEN consumption_units IS NULL THEN 1 ELSE 0 END) AS missing_consumption,
+    SUM(CASE WHEN consumption_units < 0 THEN 1 ELSE 0 END) AS negative_consumption,
+    SUM(CASE WHEN consumption_units = 0 THEN 1 ELSE 0 END) AS zero_consumption
+FROM utility_consumption_clean;
 
-
--- 5. Suspicious low consumption customers
+-- 3. Detect abnormal consumption using business rules
 
 SELECT
     customer_id,
-    AVG(consumption_kwh) AS avg_consumption,
-    MIN(consumption_kwh) AS lowest_consumption,
-    MAX(consumption_kwh) AS highest_consumption,
+    billing_month,
+    service_type,
+    consumption_units,
+    average_3m_consumption,
     CASE
-        WHEN MIN(consumption_kwh) < AVG(consumption_kwh) * 0.5
-        THEN 'Suspicious Drop'
+        WHEN consumption_units < 0 THEN 'Negative Consumption'
+        WHEN consumption_units = 0 THEN 'Zero Consumption'
+        WHEN consumption_units > average_3m_consumption * 3 THEN 'High Spike'
+        WHEN consumption_units < average_3m_consumption * 0.2 THEN 'Sudden Drop'
         ELSE 'Normal'
-    END AS risk_status
-FROM electricity_consumption_clean
-GROUP BY customer_id;
+    END AS anomaly_type
+FROM utility_consumption_clean;
 
-
--- 6. Customer type fraud summary
+-- 4. Region-wise anomaly summary
 
 SELECT
-    customer_type,
-    COUNT(DISTINCT customer_id) AS total_customers,
-    COUNT(DISTINCT CASE WHEN fraud_flag = 1 THEN customer_id END) AS fraud_customers,
-    ROUND(
-        COUNT(DISTINCT CASE WHEN fraud_flag = 1 THEN customer_id END) * 100.0 /
-        COUNT(DISTINCT customer_id),
-        2
-    ) AS fraud_rate_percentage
-FROM electricity_consumption_clean
-GROUP BY customer_type
-ORDER BY fraud_rate_percentage DESC;
+    region,
+    service_type,
+    COUNT(*) AS total_records,
+    SUM(anomaly_flag) AS total_anomalies,
+    ROUND(SUM(anomaly_flag) * 100.0 / COUNT(*), 2) AS anomaly_rate_percent
+FROM utility_consumption_clean
+GROUP BY region, service_type
+ORDER BY anomaly_rate_percent DESC;
