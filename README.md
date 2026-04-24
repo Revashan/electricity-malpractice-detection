@@ -1,66 +1,105 @@
-# Electricity Malpractice Detection Analytics
+# Electricity Malpractice Detection - Data Analyst Project
 
 ## Project Overview
 
-This project analyzes electricity consumption data to detect possible malpractice, abnormal usage patterns, and operational anomalies.
+This project analyzes electricity consumption data to identify possible malpractice or fraud activities such as electricity theft, meter tampering, abnormal consumption drops, and billing irregularities.
 
-Electricity malpractice may include:
+The project uses SQL, Python, and Power BI to clean, analyze, visualize, and detect suspicious customer behavior.
 
-- Meter tampering
-- Sudden abnormal drop in usage
-- Unusual consumption spikes
-- Suspicious billing patterns
-- Zero or near-zero usage for active customers
-- Repeated irregular readings
-- The goal of this project is to identify suspicious electricity usage patterns using data analytics, SQL analysis, Python-based exploration, and Power BI dashboards.
+## Business Problem
 
----
+Electricity providers lose revenue due to electricity theft and meter manipulation. Manual inspection is costly and time-consuming. This project helps identify high-risk customers using data-driven analysis.
 
-## Business Objective
+## Objective
 
-Electricity providers lose revenue due to malpractice, meter manipulation, and inaccurate consumption reporting.
+- Analyze electricity consumption patterns
+- Detect abnormal consumption behavior
+- Identify suspicious customers
+- Build fraud-related KPIs
+- Create an interactive Power BI dashboard
+- Support inspection teams with actionable insights
 
-This project helps to:
+## Dataset
 
-- Detect suspicious customer consumption behavior
-- Identify high-risk customers
-- Analyze abnormal usage trends
-- Support investigation teams with data-driven insights
-- Reduce revenue leakage
-- Improve monitoring and compliance
-
----
+Dataset source: Kaggle
 
 ## Tools Used
 
+- SQL
 - Python
-- Jupyter Notebook
 - Pandas
 - NumPy
-- Matplotlib
-- Seaborn
 - Scikit-learn
-- SQL
 - Power BI
+- DAX
 
-Key Insights
 
-Example insights from the analysis:
 
-Certain regions show higher malpractice suspicion rates.
-Active customers with repeated zero consumption need immediate inspection.
-Commercial customers with sudden consumption drops may indicate meter tampering.
-Customers with failed meter inspection status have higher malpractice probability.
-High-risk customers can be prioritized for field investigation.
-Business Impact
+## Project Workflow
+
+1. Data Collection
+2. Data Cleaning
+3. Exploratory Data Analysis
+4. Feature Engineering
+5. Fraud Pattern Analysis
+6. Machine Learning Model
+7. Power BI Dashboard
+8. Business Insights
+
+## Key Features Created
+
+| Feature | Description |
+|---|---|
+| avg_customer_consumption | Average usage per customer |
+| consumption_drop_ratio | Current usage compared with average usage |
+| sudden_drop_flag | Identifies sudden usage drop |
+| high_usage_flag | Identifies unusually high consumption |
+| month | Reading month |
+| year | Reading year |
+
+## Power BI Dashboard Pages
+
+### 1. Executive Summary
+Shows total customers, total consumption, fraud customers, fraud rate, and suspicious customers.
+
+### 2. Fraud Analysis
+Shows fraud by region, customer type, month, and customer risk level.
+
+### 3. Customer Consumption Analysis
+Shows detailed consumption trends and suspicious usage patterns.
+
+## Key Insights
+
+- Fraud cases are higher in selected regions.
+- Commercial customers show higher fraud risk.
+- Sudden consumption drops are strong indicators of malpractice.
+- Consumption behavior is more useful than billing amount alone.
+- Data-driven inspection prioritization can reduce manual effort.
+
+## Machine Learning Model
+
+Random Forest Classifier was used because it handles non-linear relationships and works well with structured tabular data.
+
+Evaluation metrics used:
+
+- Precision
+- Recall
+- F1 Score
+- Confusion Matrix
+
+## Business Impact
 
 This project can help electricity providers:
 
-Reduce revenue leakage
-Improve fraud and malpractice monitoring
-Prioritize inspection resources
-Detect abnormal customer behavior early
-Support data-driven compliance decisions
+- Reduce revenue loss
+- Prioritize inspection activities
+- Detect suspicious customers early
+- Improve fraud monitoring
+- Build a scalable analytics dashboard
 
-Author
-Revathy
+## Conclusion
+
+The project demonstrates how electricity malpractice can be detected using consumption behavior, customer profile data, fraud labels, and dashboard analytics.
+
+## Author
+ Revathy
